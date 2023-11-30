@@ -26,7 +26,7 @@ class CustomModel(nn.Module):
             nn.MaxPool1d(kernel_size=2)
         )
 
-        self.lstm1 = nn.LSTM(30, 60, batch_first=True, bidirectional=True)
+        self.lstm1 = nn.LSTM(3690, 120, batch_first=True, bidirectional=False)
         self.lstm2 = nn.LSTM(120, 60, batch_first=True, bidirectional=True)
         self.dropout = nn.Dropout(0.5)
         self.fc = nn.Linear(120, 10)
@@ -41,6 +41,10 @@ class CustomModel(nn.Module):
         # Reshape encoder outputs
         ec1_outputs = ec1_outputs.view(ec1_outputs.size(0), -1)
         ec2_outputs = ec2_outputs.view(ec2_outputs.size(0), -1)
+        # 在维度 1 上填充较小的张量，以匹配大小
+        min_size = min(ec1_outputs.size(1), ec2_outputs.size(1))
+        ec1_outputs = ec1_outputs[:, :min_size]
+        ec2_outputs = ec2_outputs[:, :min_size]
 
         # Element-wise multiplication
         encoder = torch.mul(ec1_outputs, ec2_outputs)
@@ -48,9 +52,10 @@ class CustomModel(nn.Module):
         # LSTM
         lstm_out, _ = self.lstm1(encoder.unsqueeze(0))
         lstm_out, _ = self.lstm2(lstm_out)
+        lstm_out = lstm_out.squeeze(0)
 
         # Global pooling
-        lstm_out = torch.mean(lstm_out, dim=1)
+        # lstm_out = torch.mean(lstm_out, dim=2)
 
         # Fully connected layers
         fc_out = self.fc(lstm_out)

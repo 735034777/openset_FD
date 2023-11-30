@@ -4,9 +4,8 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.model_selection import train_test_split
 import numpy as np
+import pandas as pd
 import argparse
-
-
 from CNN_LSTM import CustomModel
 
 def main():
@@ -17,7 +16,7 @@ def main():
     #载入模型
     model = load_model()
     #训练模型
-    train_model(model,dataloader,testdataloader,valdataloader,num_epochs=10, lr=0.001,model_save_path='best_model.pth')
+    train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.01,model_save_path='best_model.pth')
 
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, lr=0.001,
@@ -91,23 +90,28 @@ def load_model(phase="train"):
     if phase == "train":
         model = CustomModel()
         return model
+    if phase =="test":
+        model_save_path = 'best_model.pth'
+        model = torch.load(model_save_path)
+        return model
+
+
+
 
 def load_data(phase="train"):
     if phase=="train":
-        x = np.load("../../data/traindataset_x.npy", allow_pickle=True)
-        y = np.load("../../data/traindataset_y.npy", allow_pickle=True)
-        # 划分数据集
-        # 这里使用 train_test_split 函数，可以根据需要调整 test_size 和 random_state 参数
-        X_train, X_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42)
-
+        X_train = np.load("../../data/train_train_x.npy",allow_pickle=True)
+        y_train = np.load("../../data/train_train_y.npy",allow_pickle=True)
+        X_temp = np.load("../../data/train_test_x.npy",allow_pickle=True)
+        y_temp = np.load("../../data/train_test_y.npy",allow_pickle=True)
         # 再次划分为验证集和测试集
         X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
         # test_x = np.load("../../data/testdataset_x.npy", allow_pickle=True)
         # test_y = np.load("../../data/testdataset_y.npy", allow_pickle=True)
         # 转换 NumPy 数组为 PyTorch Tensor
-        x = torch.tensor(x, dtype=torch.float32)
-        y = torch.tensor(y, dtype=torch.long)
+        x = torch.tensor(X_train, dtype=torch.float32)
+        y = torch.tensor(y_train, dtype=torch.long)
         X_test = torch.tensor(X_test, dtype=torch.float32)
         y_test = torch.tensor(y_test, dtype=torch.long)
         X_val = torch.tensor(X_val, dtype=torch.float32)
@@ -123,6 +127,35 @@ def load_data(phase="train"):
         valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
 
         return dataloader,testdataloader,valdataloader
+    if phase=="test":
+        x = np.load("../../data/traindataset_x.npy", allow_pickle=True)
+        y = np.load("../../data/traindataset_y.npy", allow_pickle=True)
+        # 划分数据集
+        # 这里使用 train_test_split 函数，可以根据需要调整 test_size 和 random_state 参数
+        X_train, X_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42)
+
+        # 再次划分为验证集和测试集
+        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+        X_test = np.load("../../data/testdataset_x.npy", allow_pickle=True)
+        y_test = np.load("../../data/testdataset_y.npy", allow_pickle=True)
+        # 转换 NumPy 数组为 PyTorch Tensor
+        x = torch.tensor(X_train, dtype=torch.float32)
+        y = torch.tensor(y_train, dtype=torch.long)
+        X_test = torch.tensor(X_test, dtype=torch.float32)
+        y_test = torch.tensor(y_test, dtype=torch.long)
+        # 创建一个 TensorDataset
+        dataset = TensorDataset(x, y)
+        testdataset = TensorDataset(X_test, y_test)
+        valdataset = TensorDataset(X_val, y_val)
+        # 创建一个 DataLoader
+        batch_size = 64
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True)
+        valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+
+        return dataloader, testdataloader, valdataloader
+
 
 def load_config():
     parser = argparse.ArgumentParser(description='Neural Network Training Parameters')
