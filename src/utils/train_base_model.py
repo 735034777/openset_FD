@@ -16,7 +16,7 @@ def main():
     #载入模型
     model = load_model()
     #训练模型
-    train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.01,model_save_path='best_model.pth')
+    train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
 
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, lr=0.001,
@@ -105,6 +105,7 @@ def load_data(phase="train"):
         X_temp = np.load("../../data/train_test_x.npy",allow_pickle=True)
         y_temp = np.load("../../data/train_test_y.npy",allow_pickle=True)
         # 再次划分为验证集和测试集
+        X_train,_,y_train,_= train_test_split(X_train, y_train, test_size=0.1, random_state=42)
         X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
         # test_x = np.load("../../data/testdataset_x.npy", allow_pickle=True)
@@ -121,7 +122,7 @@ def load_data(phase="train"):
         testdataset = TensorDataset(X_test, y_test)
         valdataset = TensorDataset(X_val, y_val)
         # 创建一个 DataLoader
-        batch_size = 64
+        batch_size = 32
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True)
         valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
