@@ -1,0 +1,63 @@
+import torch
+import torch.nn as nn
+
+class CustomModel(nn.Module):
+    def __init__(self):
+        super(CustomModel, self).__init__()
+
+        self.encoder1 = nn.Sequential(
+            nn.Conv1d(1, 50, kernel_size=20, stride=2),
+            nn.Tanh(),
+            nn.Conv1d(50, 30, kernel_size=10, stride=2),
+            nn.Tanh(),
+            nn.MaxPool1d(kernel_size=2)
+        )
+
+        self.encoder2 = nn.Sequential(
+            nn.Conv1d(1, 50, kernel_size=6, stride=1),
+            nn.Tanh(),
+            nn.Conv1d(50, 40, kernel_size=6, stride=1),
+            nn.Tanh(),
+            nn.MaxPool1d(kernel_size=2),
+            nn.Conv1d(40, 30, kernel_size=6, stride=1),
+            nn.Tanh(),
+            nn.Conv1d(30, 30, kernel_size=6, stride=2),
+            nn.Tanh(),
+            nn.MaxPool1d(kernel_size=2)
+        )
+
+        self.lstm1 = nn.LSTM(30, 60, batch_first=True, bidirectional=True)
+        self.lstm2 = nn.LSTM(120, 60, batch_first=True, bidirectional=True)
+        self.dropout = nn.Dropout(0.5)
+        self.fc = nn.Linear(120, 10)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)  # Add a channel dimension (batch_size, 1, 250)
+
+        ec1_outputs = self.encoder1(x)
+        ec2_outputs = self.encoder2(x)
+
+        # Reshape encoder outputs
+        ec1_outputs = ec1_outputs.view(ec1_outputs.size(0), -1)
+        ec2_outputs = ec2_outputs.view(ec2_outputs.size(0), -1)
+
+        # Element-wise multiplication
+        encoder = torch.mul(ec1_outputs, ec2_outputs)
+
+        # LSTM
+        lstm_out, _ = self.lstm1(encoder.unsqueeze(0))
+        lstm_out, _ = self.lstm2(lstm_out)
+
+        # Global pooling
+        lstm_out = torch.mean(lstm_out, dim=1)
+
+        # Fully connected layers
+        fc_out = self.fc(lstm_out)
+        fc_out = self.softmax(fc_out)
+
+        return fc_out
+
+# # 创建模型实例
+#
+# model = CustomModel()
