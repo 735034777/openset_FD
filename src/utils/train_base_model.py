@@ -12,9 +12,9 @@ def main():
     #读取配置
     config = load_config()
     # 载入数据
-    dataloader,testdataloader,valdataloader = load_data()
+    dataloader,testdataloader,valdataloader,dim = load_data()
     #载入模型
-    model = load_model()
+    model = load_model(dim)
     #训练模型
     train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
 
@@ -37,7 +37,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()
-            outputs = model(inputs)
+            outputs,_ = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -49,7 +49,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
             for val_inputs, val_labels in valdataloader:
                 val_inputs, val_labels = val_inputs.to(device), val_labels.to(device)
                 val_outputs = model(val_inputs)
-                val_loss += criterion(val_outputs, val_labels).item()
+                val_loss += criterion(val_outputs[0], val_labels).item()
 
         val_loss /= len(valdataloader)
 
@@ -73,7 +73,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
     with torch.no_grad():
         for test_inputs, test_labels in testdataloader:
             test_inputs, test_labels = test_inputs.to(device), test_labels.to(device)
-            test_outputs = model(test_inputs)
+            test_outputs,_ = model(test_inputs)
             _, predicted = torch.max(test_outputs.data, 1)
             total += test_labels.size(0)
             correct += (predicted == test_labels).sum().item()
@@ -86,9 +86,9 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
 
 
 
-def load_model(phase="train"):
+def load_model(dim,phase="train"):
     if phase == "train":
-        model = CustomModel()
+        model = CustomModel(dim)
         return model
     if phase =="test":
         model_save_path = 'best_model.pth'
@@ -104,8 +104,9 @@ def load_data(phase="train"):
         y_train = np.load("../../data/train_train_y.npy",allow_pickle=True)
         X_temp = np.load("../../data/train_test_x.npy",allow_pickle=True)
         y_temp = np.load("../../data/train_test_y.npy",allow_pickle=True)
+        dim = len(np.unique(y_train))
         # 再次划分为验证集和测试集
-        X_train,_,y_train,_= train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+        # X_train,_,y_train,_= train_test_split(X_train, y_train, test_size=0.1, random_state=42)
         X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
         # test_x = np.load("../../data/testdataset_x.npy", allow_pickle=True)
@@ -122,40 +123,34 @@ def load_data(phase="train"):
         testdataset = TensorDataset(X_test, y_test)
         valdataset = TensorDataset(X_val, y_val)
         # 创建一个 DataLoader
-        batch_size = 32
+        batch_size = 64
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True)
         valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
 
-        return dataloader,testdataloader,valdataloader
+        return dataloader,testdataloader,valdataloader,dim
     if phase=="test":
-        x = np.load("../../data/traindataset_x.npy", allow_pickle=True)
-        y = np.load("../../data/traindataset_y.npy", allow_pickle=True)
-        # 划分数据集
-        # 这里使用 train_test_split 函数，可以根据需要调整 test_size 和 random_state 参数
-        X_train, X_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42)
+        X_train = np.load("../../data/train_train_x.npy", allow_pickle=True)
+        y_train = np.load("../../data/train_train_y.npy", allow_pickle=True)
+        X_test = np.load("../../data/test_test_x.npy", allow_pickle=True)
+        y_test = np.load("../../data/test_test_y.npy", allow_pickle=True)
+        dim =  len(np.unique(y_train))
 
-        # 再次划分为验证集和测试集
-        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
-
-        X_test = np.load("../../data/testdataset_x.npy", allow_pickle=True)
-        y_test = np.load("../../data/testdataset_y.npy", allow_pickle=True)
         # 转换 NumPy 数组为 PyTorch Tensor
         x = torch.tensor(X_train, dtype=torch.float32)
         y = torch.tensor(y_train, dtype=torch.long)
         X_test = torch.tensor(X_test, dtype=torch.float32)
         y_test = torch.tensor(y_test, dtype=torch.long)
         # 创建一个 TensorDataset
-        dataset = TensorDataset(x, y)
-        testdataset = TensorDataset(X_test, y_test)
-        valdataset = TensorDataset(X_val, y_val)
-        # 创建一个 DataLoader
-        batch_size = 64
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True)
-        valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+        # dataset = TensorDataset(x, y)
+        # testdataset = TensorDataset(X_test, y_test)
 
-        return dataloader, testdataloader, valdataloader
+        # 创建一个 DataLoader
+        # batch_size = 64
+        # dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        # testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True)
+
+        return X_train, X_test,y_train,y_test,dim
 
 
 def load_config():

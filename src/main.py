@@ -2,17 +2,19 @@ import os
 import torch
 import torch.nn as nn
 import numpy as np
+from utils.train_base_model import load_model,load_data
 
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
 def main():
     np.random.seed(1234)
-    #载入模型
-    model = load_model()
+
     # 获取数据
-    data = get_train_test()
+    data = load_data()
     #分割数据
-    x_train,x_test,y_train,y_test = data
+    x_train,x_test,y_train,y_test,dim = data
+    #载入模型
+    model = load_model(dim)
     #计算mean和distance,并保存其文件
     create_model(model,data)
 
