@@ -1,3 +1,8 @@
+import os, sys, pickle, glob
+# import os.path as path
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_path)
+
 import torch
 import torch.nn as nn
 
