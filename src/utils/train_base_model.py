@@ -2,16 +2,25 @@ import os, sys, pickle, glob
 # import os.path as path
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_path)
+from src.config import *
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 import numpy as np
 import pandas as pd
 import argparse
 from CNN_LSTM import CustomModel
+
+model_save_path = BASE_FILE_PATH+r"\src\train\CWRU"
+
+def train_base_model():
+    accuracy = main()
+    return accuracy
+
 
 def main():
     #读取配置
@@ -21,11 +30,11 @@ def main():
     #载入模型
     model = load_model(dim)
     #训练模型
-    train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
-
+    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
+    return accuracy
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, lr=0.001,
-                model_save_path='best_model.pth'):
+                model_save_path=model_save_path+'\\best_model.pth'):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
@@ -85,6 +94,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
 
     accuracy = correct / total
     print(f'Test Accuracy: {accuracy:.4f}')
+    return accuracy
 
 
 
@@ -97,9 +107,9 @@ def load_model(dim,phase="train"):
         model = CustomModel(dim)
         return model
     if phase =="test":
-        model_save_path = 'utils/best_model.pth'
+        # model_save_path = 'best_model.pth'
         model = CustomModel(dim)
-        state_dict  = torch.load(model_save_path)
+        state_dict  = torch.load(model_save_path+'\\best_model.pth')
         # 加载参数
         model.load_state_dict(state_dict)
         return model
@@ -164,10 +174,10 @@ def map_test_values_not_in_train(y_train, y_test):
 
 def load_data(phase="train"):
     if phase=="train":
-        X_train = np.load("../../data/train_train_x.npy",allow_pickle=True)
-        y_train = np.load("../../data/train_train_y.npy",allow_pickle=True)
-        X_temp = np.load("../../data/train_test_x.npy",allow_pickle=True)
-        y_temp = np.load("../../data/train_test_y.npy",allow_pickle=True)
+        X_train = np.load(BASE_FILE_PATH+"/data/train_train_x.npy",allow_pickle=True)
+        y_train = np.load(BASE_FILE_PATH+"/data/train_train_y.npy",allow_pickle=True)
+        X_temp = np.load(BASE_FILE_PATH+"/data/train_test_x.npy",allow_pickle=True)
+        y_temp = np.load(BASE_FILE_PATH+"/data/train_test_y.npy",allow_pickle=True)
         dim = len(np.unique(y_train))
         #将0-10的数值映射到0-6，并保存映射表
         y_train, mapping  = remap_values(y_train,10,dim)
@@ -198,10 +208,10 @@ def load_data(phase="train"):
 
         return dataloader,testdataloader,valdataloader,dim
     if phase=="test":
-        X_train = np.load("../data/train_train_x.npy", allow_pickle=True)
-        y_train = np.load("../data/train_train_y.npy", allow_pickle=True)
-        X_test = np.load("../data/test_test_x.npy", allow_pickle=True)
-        y_test = np.load("../data/test_test_y.npy", allow_pickle=True)
+        X_train = np.load(BASE_FILE_PATH+"/data/train_train_x.npy", allow_pickle=True)
+        y_train = np.load(BASE_FILE_PATH+"/data/train_train_y.npy", allow_pickle=True)
+        X_test = np.load(BASE_FILE_PATH+"/data/test_test_x.npy", allow_pickle=True)
+        y_test = np.load(BASE_FILE_PATH+"/data/test_test_y.npy", allow_pickle=True)
         dim =  len(np.unique(y_train))
 
         #找出y_train和y_test之间的不同值，并将其映射到6-10
