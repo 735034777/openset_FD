@@ -51,8 +51,8 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()
-            outputs,_ = model(inputs)
-            loss = criterion(outputs, labels)
+            outputs= model(inputs)
+            loss = criterion(outputs[0], labels)
             loss.backward()
             optimizer.step()
 
@@ -67,7 +67,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
 
         val_loss /= len(valdataloader)
 
-        print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}')
+        # print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}')
 
         # Save the best model
         if val_loss < best_val_loss:
@@ -87,13 +87,15 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
     with torch.no_grad():
         for test_inputs, test_labels in testdataloader:
             test_inputs, test_labels = test_inputs.to(device), test_labels.to(device)
-            test_outputs,_ = model(test_inputs)
-            _, predicted = torch.max(test_outputs.data, 1)
+            test_outputs= model(test_inputs)
+            _, predicted = torch.max(test_outputs[0].data, 1)
             total += test_labels.size(0)
             correct += (predicted == test_labels).sum().item()
 
     accuracy = correct / total
     print(f'Test Accuracy: {accuracy:.4f}')
+    del model
+    del dataloader, testdataloader, valdataloader
     return accuracy
 
 

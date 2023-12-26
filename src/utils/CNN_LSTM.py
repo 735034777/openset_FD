@@ -34,7 +34,8 @@ class CustomModel(nn.Module):
         self.lstm1 = nn.LSTM(3690, 120, batch_first=True, bidirectional=False)
         self.lstm2 = nn.LSTM(120, 60, batch_first=True, bidirectional=True)
         self.dropout = nn.Dropout(0.5)
-        self.fc = nn.Linear(120, dim)
+        self.fc1 = nn.Linear(120, 30)
+        self.fc2 = nn.Linear(30,dim)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
@@ -63,10 +64,11 @@ class CustomModel(nn.Module):
         # lstm_out = torch.mean(lstm_out, dim=2)
 
         # Fully connected layers
-        fc_out1 = self.fc(lstm_out)
-        fc_out = self.softmax(fc_out1)
+        fc_out1 = self.fc1(lstm_out)
+        fc_out2 = self.fc2(fc_out1)
+        fc_out = self.softmax(fc_out2)
 
-        return fc_out,fc_out1
+        return fc_out,fc_out2,fc_out1
 
 # # 创建模型实例
 #
