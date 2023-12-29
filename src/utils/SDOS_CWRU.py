@@ -11,6 +11,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
+from src.config import *
 
 
 
@@ -195,12 +196,14 @@ def save_SDOS_dataset(save_path,
     # folder_path = 'H:\project\data\cwru\CaseWesternReserveUniversityData'
 
     # 读取MAT文件并创建DataFrame
+    print("data generating...")
     df = read_mat_files(folder_path)
 
     all_labels = ['B007', 'B014', 'B021', 'IR007', 'IR014', 'IR021', 'OR007@6', 'OR014@6', 'OR021@6']
     # 随机生成训练集和测试集lables，并打印区别
-    num_labels_to_select = random.randint(5, 8)
+    num_labels_to_select = random.randint(3, 8)
     trainlabels = random.sample(all_labels, num_labels_to_select)
+    num_labels_to_select = random.randint(3, 8)
     testlabels = random.sample(all_labels, num_labels_to_select)
     trainlabels.append("normal")
     testlabels.append("normal")
@@ -209,5 +212,9 @@ def save_SDOS_dataset(save_path,
     train, test = build_dataset(df, all_labels, trainlabels, testlabels)
     create_testdataset(train, test, all_labels, trainlabels, testlabels,save_path, phase="train")
     create_testdataset(train, test, all_labels, trainlabels, testlabels, save_path,phase="test")
+    del train,test
     return trainlabels,testlabels
+
+if __name__=="__main__":
+    save_SDOS_dataset(BASE_FILE_PATH+"/src/trian/CWRU")
 

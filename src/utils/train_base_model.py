@@ -18,6 +18,7 @@ from CNN_LSTM import CustomModel
 model_save_path = BASE_FILE_PATH+r"\src\train\CWRU"
 
 def train_base_model():
+    print("training base model...")
     accuracy = main()
     return accuracy
 
