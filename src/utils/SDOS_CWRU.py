@@ -155,6 +155,7 @@ def segment_time_series(time_series):
     step = 60
 #     初始化中间变量
     segments = []
+    segments_fft = []
     for i in range(0, len(time_series), step):
         segment = time_series[i:i + segment_length]
         if len(segment) == segment_length:

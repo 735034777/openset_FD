@@ -5,6 +5,7 @@ sys.path.append(current_path)
 
 import torch
 import torch.nn as nn
+import src.config as config
 
 class CustomModel(nn.Module):
     def __init__(self,dim):
@@ -67,7 +68,9 @@ class CustomModel(nn.Module):
         fc_out1 = self.fc1(lstm_out)
         fc_out2 = self.fc2(fc_out1)
         fc_out = self.softmax(fc_out2)
-
+        # if config.HIGH_DIMENSION_OUTPUT == True:
+        #     #使用高维向量是只输出高维激活向量
+        #     fc_out2 = torch.tensor([])#
         return fc_out,fc_out2,fc_out1
 
 # # 创建模型实例
