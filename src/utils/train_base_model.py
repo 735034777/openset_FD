@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import argparse
 from CNN_LSTM import CustomModel
+import time
 
 def main():
     #读取配置
@@ -16,8 +17,9 @@ def main():
     #载入模型
     model = load_model()
     #训练模型
+    s_t = time.time()
     train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
-
+    print("训练时长为{:.2f}s".format(time.time()-s_t))
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, lr=0.001,
                 model_save_path='best_model.pth'):
