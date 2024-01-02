@@ -4,7 +4,7 @@ import pandas as pd
 from src.config import BASE_FILE_PATH
 sys.path.append('../../utils')
 from src.evt_fitting import calculate_openmax_accuracy,calculate_openness
-from src.utils.SDOS_CWRU import save_SDOS_dataset
+from src.utils.CDOS_CWRU import save_CDOS_dataset
 from src.utils.train_base_model import train_base_model
 from src.utils.tools import delete_file
 
@@ -14,12 +14,12 @@ FOLDER_PATH = r'H:\project\data\cwru\CaseWesternReserveUniversityData'
 SAVE_PATH = r"H:\project\imbalanced_data\openset_FD\data"
 
 
-def train_SDOS_CWRU(result_path):
+def train_CDOS_CWRU(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
     for i in range(100):
-        trainlabels,testlabels = save_SDOS_dataset(SAVE_PATH,FOLDER_PATH)
+        trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,FOLDER_PATH)
 
         openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
         accuracy = train_base_model()
@@ -57,8 +57,8 @@ def train_SDOS_CWRU(result_path):
 if __name__=="__main__":
     import warnings
     warnings.filterwarnings("ignore")
-    result = "SDOS_RESULTS_DIFF_METRIC.csv"
+    result = "CDOS_RESULTS_DIFF_METRIC.csv"
     # config.HIGH_DIMENSION_OUTPUT = True
-    train_SDOS_CWRU(result)
+    train_CDOS_CWRU(result)
     # sys.exit()
 
