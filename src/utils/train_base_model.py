@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import argparse
 from CNN_LSTM import CustomModel
-import time
+from src.utils.II_LOSS import ii_loss
 
 model_save_path = BASE_FILE_PATH+r"\src\train\CWRU"
 
@@ -32,14 +32,8 @@ def main():
     #载入模型
     model = load_model(dim)
     #训练模型
-<<<<<<< HEAD
-    s_t = time.time()
-    train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
-    print("训练时长为{:.2f}s".format(time.time()-s_t))
-=======
-    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_epochs=100, lr=0.0001,model_save_path='best_model.pth')
+    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,model_save_path='best_model.pth')
     return accuracy
->>>>>>> 1c6039c67bede3a40c079df3620235b9ecbae899
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, lr=0.001,
                 model_save_path=model_save_path+'\\best_model.pth'):
@@ -47,6 +41,8 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
+    if LOSS_TYPE == "II_LOSS":
+        criterion = ii_loss
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     best_val_loss = float('inf')
