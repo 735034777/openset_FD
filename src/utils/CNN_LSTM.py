@@ -1,8 +1,14 @@
+import os, sys, pickle, glob
+# import os.path as path
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_path)
+
 import torch
 import torch.nn as nn
+import src.config as config
 
 class CustomModel(nn.Module):
-    def __init__(self):
+    def __init__(self,dim):
         super(CustomModel, self).__init__()
 
         self.encoder1 = nn.Sequential(
@@ -29,7 +35,8 @@ class CustomModel(nn.Module):
         self.lstm1 = nn.LSTM(3690, 120, batch_first=True, bidirectional=False)
         self.lstm2 = nn.LSTM(120, 60, batch_first=True, bidirectional=True)
         self.dropout = nn.Dropout(0.5)
-        self.fc = nn.Linear(120, 10)
+        # self.fc1 = nn.Linear(120, 30)
+        self.fc2 = nn.Linear(120,dim)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
@@ -58,10 +65,14 @@ class CustomModel(nn.Module):
         # lstm_out = torch.mean(lstm_out, dim=2)
 
         # Fully connected layers
-        fc_out = self.fc(lstm_out)
-        fc_out = self.softmax(fc_out)
-
-        return fc_out
+        # fc_out1 = self.fc1(lstm_out)
+        fc_out2 = self.fc2(lstm_out)
+        fc_out = self.softmax(fc_out2)
+        fc_out1 = torch.tensor([])
+        # if config.HIGH_DIMENSION_OUTPUT == True:
+        #     #使用高维向量是只输出高维激活向量
+        #     fc_out2 = torch.tensor([])#
+        return fc_out,fc_out2,fc_out1
 
 # # 创建模型实例
 #
