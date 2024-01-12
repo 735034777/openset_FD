@@ -29,5 +29,29 @@ def ii_loss(outputs, labels, num_classes):
     loss = -1* inter_separation+intra_spread
     return loss
 
+
+# 测试案例
+def test_ii_loss():
+    # 生成模拟数据
+    num_samples = 10
+    num_features = 5
+    num_classes = 3
+
+    # 随机生成outputs和labels
+    outputs = torch.randn(num_samples, num_features)
+    labels = torch.randint(0, num_classes, (num_samples,))
+
+    # 调用函数计算损失
+    loss = ii_loss(outputs, labels, num_classes)
+
+    # 检查loss是否为一个标量张量
+    assert loss.dim() == 0, "Loss is not a scalar value."
+
+    # 打印loss用于验证
+    print(f"Computed loss: {loss.item()}")
+
+
+
+
 if __name__=="__main__":
-    y = torch.random
+    test_ii_loss()
