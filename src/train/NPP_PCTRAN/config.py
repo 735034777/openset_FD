@@ -1,0 +1,8 @@
+from src.config import *
+MAXTIMESTAMP = 1500
+SEGMENT_LENGTH = 50
+STEP = 20
+BASE_MODEL_LOSS_TYPE = "COSINE"
+BASE_FILE_PATH = r"H:\project\imbalanced_data\openset_FD"
+BASE_MOEDL_EPOCH = 500
+BASE_MODEL_LR = 1E-4

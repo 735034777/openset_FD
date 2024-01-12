@@ -2,7 +2,7 @@ import os, sys, pickle, glob
 # import os.path as path
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_path)
-from src.config import *
+from src.train.NPP_PCTRAN.config import *
 
 import torch
 import torch.nn as nn
@@ -13,10 +13,10 @@ from sklearn.metrics import precision_score, recall_score, f1_score, confusion_m
 import numpy as np
 import pandas as pd
 import argparse
-from CNN_LSTM import CustomModel
+from src.train.NPP_PCTRAN.utils.CNN_LSTM  import CustomModel
 from src.utils.II_LOSS import ii_loss
 
-model_save_path = BASE_FILE_PATH+r"\src\train\CWRU"
+model_save_path = BASE_FILE_PATH+r"\src\train\NPP_PCTRAN"
 
 def train_base_model():
     print("training base model...")
@@ -32,10 +32,10 @@ def main():
     #载入模型
     model = load_model(dim)
     #训练模型
-    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_classes=dim,num_epochs=30, lr=1e-2,model_save_path='best_model.pth')
+    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_classes=dim,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,model_save_path='best_model.pth')
     return accuracy
 
-def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, lr=0.001,
+def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,
                 model_save_path=model_save_path+'\\best_model.pth',num_classes=10):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -88,7 +88,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=10, 
 
         val_loss /= len(valdataloader)
 
-        print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}')
+        # print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}')
 
         # Save the best model
         if val_loss < best_val_loss:

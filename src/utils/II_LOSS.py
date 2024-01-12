@@ -26,7 +26,7 @@ def ii_loss(outputs, labels, num_classes):
     inter_separation = torch.max(torch.cdist(class_means, class_means, p=2))
 
     # ii-Loss
-    loss = intra_spread - inter_separation
+    loss = -1* inter_separation+intra_spread
     return loss
 
 if __name__=="__main__":
