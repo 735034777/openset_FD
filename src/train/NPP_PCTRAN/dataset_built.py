@@ -8,8 +8,8 @@ from src.config import *
 SOURCE_FILE_PATH =  BASE_FILE_PATH +"/data/NPP"
 
 
-def read_mat_files():
-    df = get_data()
+def read_mat_files(filepath=SOURCE_FILE_PATH+r"\100\LOCAC50.csv"):
+    df = get_data(filepath)
     return df
 
 def save_SDOS_dataset(save_path,

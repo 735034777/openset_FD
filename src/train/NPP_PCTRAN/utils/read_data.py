@@ -10,7 +10,7 @@
 import os
 import pandas as pd
 from src.train.NPP_PCTRAN.config import *
-SOURCE_FILE_PATH =  BASE_FILE_PATH +r"\data\NPP"
+
 import os
 import pickle
 import yaml
@@ -48,7 +48,7 @@ def evaluate(y_true, y_hat, label='test'):
     # print('{} set acc:{}, pre:{}, recall:{}'.format(label, acc, pre,recall))
     return acc,pre,recall
 
-def get_data(filepath=SOURCE_FILE_PATH+"\LOCAC50.csv"
+def get_data(filepath=SOURCE_FILE_PATH+r"\10.csv"
              ,IF_fft=False,IF_normalize=True,highest_time=2300):
     data = pd.read_csv(filepath)
     import os
