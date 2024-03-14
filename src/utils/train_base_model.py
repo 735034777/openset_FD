@@ -88,7 +88,7 @@ def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=BASE
 
         val_loss /= len(valdataloader)
 
-        print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}')
+        # print(f'Epoch {epoch + 1}/{num_epochs}, Training Loss: {loss.item():.4f}, Validation Loss: {val_loss:.4f}')
 
         # Save the best model
         if val_loss < best_val_loss:

@@ -172,7 +172,7 @@ def save_CDOS_dataset(save_path,
     # print(list(set(trainlabels).symmetric_difference(set(testlabels))))  # 应该先求交后求差
     train, test = build_dataset(df, all_labels,load=0)
     create_testdataset(train, test, all_labels, trainlabels, testlabels,save_path, phase="train")
-    _, test = build_dataset(df, all_labels, load=1)
+    _, test = build_dataset(df, all_labels, load=2)
     create_testdataset(train, test, all_labels, trainlabels, testlabels, save_path,phase="test")
     del train,test,_
     return trainlabels,testlabels

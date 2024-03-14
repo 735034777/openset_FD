@@ -18,7 +18,7 @@ def train_CDOS_CWRU(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    for i in range(100):
+    for i in range(500):
         trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,FOLDER_PATH)
 
         openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
@@ -45,19 +45,26 @@ def train_CDOS_CWRU(result_path):
                     # 确定新行的索引位置
                     # new_index = len(results)
                     # 扩展DataFramel
-                    results = results.reindex(results.index.tolist() + [new_index])
-                    # results.append(pd.Series(new_row, index=results.columns), ignore_index=True)
-                    # 使用iloc填充新行
-                    results.iloc[new_index] = new_row
+                    # results = results.reindex(results.index.tolist() + [new_index])
+                    # # results.append(pd.Series(new_row, index=results.columns), ignore_index=True)
+                    # # 使用iloc填充新行
+                    # results.iloc[new_index] = new_row
+
+                    # 使用列表创建一个新的DataFrame行
+                    new_row_df = pd.DataFrame([new_row], columns=results.columns)
+
+                    # 使用pd.concat()将新行添加到原始DataFrame中
+                    results = pd.concat([results, new_row_df], ignore_index=True)
+                results.to_csv(result_path)
                 if os.path.exists(BASE_FILE_PATH+"/src/data/CWRU_lmnn_model.pkl"):
                     os.remove(BASE_FILE_PATH+"/src/data/CWRU_lmnn_model.pkl")
         # results.append(dict(zip(results.columns,new_row)),ignore_index=True)
-        results.to_csv(result_path)
+        # results.to_csv(result_path)
 
 if __name__=="__main__":
     import warnings
     warnings.filterwarnings("ignore")
-    result = "CDOS_RESULTS_DIFF_METRIC.csv"
+    result = "CDOS_RESULTS_DIFF_METRIC_0_2.csv"
     # config.HIGH_DIMENSION_OUTPUT = True
     train_CDOS_CWRU(result)
     # sys.exit()
