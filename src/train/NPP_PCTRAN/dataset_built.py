@@ -24,10 +24,13 @@ def save_SDOS_dataset(save_path,
     num_class = len(pd.unique(df["label"]))
     all_labels = [i for i in range(num_class)]
     # 随机生成训练集和测试集lables，并打印区别
-    num_labels_to_select = random.randint(3, 20)
+    num_labels_to_select = random.randint(3, 5)
     trainlabels = random.sample(all_labels, num_labels_to_select)
-    num_labels_to_select = random.randint(3, 20)
+    num_labels_to_select = random.randint(5, 20)
     testlabels = random.sample(all_labels, num_labels_to_select)
+    if USE_FIX_LABELS:
+        trainlabels = [0,4,3,5,6,9]
+        testlabels = [4,7,6,9]
     # trainlabels.append("normal")
     # testlabels.append("normal")
     # all_labels.append("normal")

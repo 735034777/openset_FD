@@ -162,9 +162,9 @@ def save_CDOS_dataset(save_path,
 
     all_labels = ['B007', 'B014', 'B021', 'IR007', 'IR014', 'IR021', 'OR007@6', 'OR014@6', 'OR021@6']
     # 随机生成训练集和测试集lables，并打印区别
-    num_labels_to_select = random.randint(3, 8)
+    num_labels_to_select = random.randint(2, 5)
     trainlabels = random.sample(all_labels, num_labels_to_select)
-    num_labels_to_select = random.randint(3, 8)
+    num_labels_to_select = random.randint(5, 9)
     testlabels = random.sample(all_labels, num_labels_to_select)
     trainlabels.append("normal")
     testlabels.append("normal")

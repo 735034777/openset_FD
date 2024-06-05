@@ -16,6 +16,7 @@ from src.train.NPP_PCTRAN.dataset_built import save_SDOS_dataset,create_testdata
 
 from src.train.NPP_PCTRAN.config import *
 import src.train.NPP_PCTRAN.config as config
+from itertools import combinations
 # SOURCE_FILE_PATH =  BASE_FILE_PATH +"/data/NPP"
 
 
@@ -52,15 +53,42 @@ def save_CDOS_dataset(save_path,trainlabels,testlabels,index,
 
     return trainlabels,testlabels
 
+class LabelGenerator:
+    def __init__(self):
+        self.index = 0
+        self.openfault_subsets = []
+
+    def generate_labels(self):
+        num_class = 26
+        all_labels = list(range(num_class))
+        num_labels_to_select = random.randint(3, 5)
+        trainlabels = random.sample(all_labels, num_labels_to_select)
+        USE_FIX_LABELS = True
+        if USE_FIX_LABELS:
+            trainlabels =[9, 19, 13, 17, 12, 4, 18, 7, 15, 1, 20, 24]
+            openfault = list(set(all_labels) - set(trainlabels))
+            if not self.openfault_subsets:  # 只在第一次调用时生成子集
+                self.openfault_subsets = list(combinations(openfault, 2))
+            testlabels = trainlabels+list(self.openfault_subsets[self.index % len(self.openfault_subsets)])
+            self.index += 1
+        else:
+            testlabels = []
+        return trainlabels, testlabels
+
 
 def generate_labels():
     num_class = 26
     all_labels = [i for i in range(num_class)]
     # 随机生成训练集和测试集lables，并打印区别
-    num_labels_to_select = random.randint(3, 20)
+    num_labels_to_select = random.randint(3, 5)
     trainlabels = random.sample(all_labels, num_labels_to_select)
-    num_labels_to_select = random.randint(3, 20)
+    num_labels_to_select = random.randint(5, 24)
     testlabels = random.sample(all_labels, num_labels_to_select)
+    if USE_FIX_LABELS:
+        trainlabels=[1, 11, 6, 22, 12, 5, 0, 17, 2, 14, 19, 8, 20, 7, 13, 16, 18]
+        openfault = list(set(all_labels)-set(trainlabels))
+        openfault_subsets = list(combinations(openfault, 4))
+        testlabels = trainlabels
     return trainlabels,testlabels
 
 

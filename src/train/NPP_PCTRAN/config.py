@@ -7,3 +7,4 @@ BASE_FILE_PATH = r"H:\project\imbalanced_data\openset_FD"
 BASE_MOEDL_EPOCH = 500
 BASE_MODEL_LR = 1E-4
 SOURCE_FILE_PATH =  BASE_FILE_PATH +r"\data\NPP"
+USE_FIX_LABELS = True

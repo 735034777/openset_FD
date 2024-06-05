@@ -10,6 +10,7 @@ from src.utils.tools import delete_file
 from src.train.NPP_PCTRAN.utils.CDOS_PCTRAN import save_CDOS_dataset
 from src.train.NPP_PCTRAN.utils.CDOS_PCTRAN import generate_labels
 from src.train.NPP_PCTRAN.config import *
+from utils.CDOS_PCTRAN import LabelGenerator
 
 
 
@@ -22,8 +23,14 @@ def train_CDOS_PCTRAN(result_path):
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
     indexs = [["50", "70"], ["70", "100"], ["50", "100"]]
-    for i in range(300):
+    listlabelgen = LabelGenerator()
+    for i in range(100):
         trainlabels, testlabels = generate_labels()
+        trainlabels, testlabels = listlabelgen.generate_labels()
+
+
+
+
         for index in indexs:
             trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,trainlabels,testlabels,index,FOLDER_PATH)
 
@@ -35,7 +42,7 @@ def train_CDOS_PCTRAN(result_path):
                         config.HIGH_DIMENSION_OUTPUT = False
                     else:
                         config.HIGH_DIMENSION_OUTPUT = True
-                    for i in range(0,10):
+                    for i in range(0,1):
                         new_index = len(results)
                         # config.LMNN_LR = 5*10**(-1*j)
                         try:

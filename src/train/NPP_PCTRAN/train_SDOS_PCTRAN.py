@@ -19,7 +19,7 @@ def train_SDOS_PCTRAN(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    for i in range(300):
+    for i in range(100):
 
 
         trainlabels,testlabels = save_SDOS_dataset(SAVE_PATH,FOLDER_PATH)

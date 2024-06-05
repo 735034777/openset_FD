@@ -18,13 +18,15 @@ def train_CDOS_CWRU(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    for i in range(500):
+    for i in range(100):
         trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,FOLDER_PATH)
 
         openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
         accuracy = train_base_model()
-        for metric_types in metric_types_list:
-            for j in range(1):
+        try:
+            for metric_types in metric_types_list:
+                for j in range(1):
+                    youdens_indexs = []
                 if j == 0:
                     config.HIGH_DIMENSION_OUTPUT = False
                 else:
@@ -33,6 +35,7 @@ def train_CDOS_CWRU(result_path):
                     new_index = len(results)
                     # config.LMNN_LR = 5*10**(-1*j)
                     testaccuracy,precision,recall,f1,youdens_index,soft_accuracy,soft_metrix = calculate_openmax_accuracy(metric_types,5+10*i)
+                    youdens_indexs.append(youdens_index)
                     open_fault = set(testlabels)-set(trainlabels)
                     formatted_open_fault = ', '.join(map(str, open_fault))
                     if config.HIGH_DIMENSION_OUTPUT==True:
@@ -55,9 +58,19 @@ def train_CDOS_CWRU(result_path):
 
                     # 使用pd.concat()将新行添加到原始DataFrame中
                     results = pd.concat([results, new_row_df], ignore_index=True)
+                # # 示例列表
+                # list_with_nan = youdens_indexs
+                # series = pd.Series(list_with_nan)
+                #
+                # # 判断是否存在NaN值
+                # has_nan = series.isna().any()
+                # if max(youdens_indexs)<0.75 and has_nan:
+                #     break
                 results.to_csv(result_path)
                 if os.path.exists(BASE_FILE_PATH+"/src/data/CWRU_lmnn_model.pkl"):
                     os.remove(BASE_FILE_PATH+"/src/data/CWRU_lmnn_model.pkl")
+        except ValueError:
+            continue
         # results.append(dict(zip(results.columns,new_row)),ignore_index=True)
         # results.to_csv(result_path)
 
