@@ -12,6 +12,17 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
 from src.config import *
+from itertools import combinations
+import math
+import random
+import numpy as np
+import torch
+
+
+# 设置随机种子
+random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
 
 
 
@@ -100,7 +111,7 @@ def validate_OR(input_str):
     return bool(pattern.match(input_str))
 
 
-def build_dataset(df, all_labels, trainlabels, testlabels):
+def build_dataset(df, all_labels, trainlabels=1, testlabels=1):
     # 读取MAT文件并创建DataFrame
     # 设置参数
     load = 0
@@ -162,6 +173,128 @@ def segment_time_series(time_series):
             segments.append(segment)
     return segments
 
+class SNR_CWRU_Data:
+    def __init__(self,save_path,folder_path,SNR=20,source_condiction=0,target_condiction=0):
+        self.SNR = SNR
+        # self.phase = phase
+        self.source_condiction=source_condiction
+        self.target_condiction=target_condiction
+        self.save_path=save_path
+        self.folder_path=folder_path
+        self.USE_FIX_LABELS = True
+        self.add_snr = False
+        self.trainlabel_index = [0,4,3,5,6]
+        self.testlabel_index = [4,7,6]
+        self.openfaultsize = 1
+        self.index = 0
+        self.openfault_subsets = False
+        self.openness = 1 - math.sqrt((2 * len(self.trainlabel_index)) / (2*len(self.trainlabel_index) + self.openfaultsize))
+        self.all_labels = ['B007', 'B014', 'B021', 'IR007', 'IR014', 'IR021', 'OR007@6', 'OR014@6', 'OR021@6']
+
+    def creat_SNR_dataset(self):
+        self.add_snr = True
+        return self.save_CDOS_dataset()
+
+    def save_CDOS_dataset(self):
+        # 读取MAT文件并创建DataFrame
+        print("data generating...")
+        df = read_mat_files(self.folder_path)
+
+        all_labels = ['B007', 'B014', 'B021', 'IR007', 'IR014', 'IR021', 'OR007@6', 'OR014@6', 'OR021@6']
+        # 随机生成训练集和测试集lables，并打印区别
+        trainlabel_index = self.trainlabel_index
+        openfaultsize = 1
+        if self.USE_FIX_LABELS:
+            trainlabels = []
+            testlabels = []
+
+            for index in trainlabel_index:
+                trainlabels.append(all_labels[index])
+            for index in self.testlabel_index:
+                testlabels.append(all_labels[index])
+            # trainlabels = ['IR014', 'IR007', 'B021', 'IR021','B007']
+            openfault = list(set(all_labels) - set(trainlabels))
+            if not self.openfault_subsets:  # 只在第一次调用时生成子集
+                self.openfault_subsets = list(combinations(openfault, openfaultsize))
+            # openfault_subsets = list(combinations(openfault, 18))
+            # testlabels = trainlabels + list(self.openfault_subsets[self.index % len(self.openfault_subsets)])
+            # testlabels = self.testlabel_index
+            self.index += 1
+        else:
+            num_labels_to_select = random.randint(3, 5)
+            trainlabels = random.sample(all_labels, num_labels_to_select)
+            num_labels_to_select = random.randint(5, 9)
+            testlabels = random.sample(all_labels, num_labels_to_select)
+            self.openness = 1-math.sqrt(2*len(trainlabels)/(len(trainlabels)+len(testlabels)))
+        trainlabels.append("normal")
+        testlabels.append("normal")
+        all_labels.append("normal")
+        # print(list(set(trainlabels).symmetric_difference(set(testlabels))))  # 应该先求交后求差
+        train, test = self.build_dataset(df, all_labels, load=self.source_condiction)
+        create_testdataset(train, test, all_labels, trainlabels, testlabels, self.save_path, phase="train")
+        _, test = self.build_dataset(df, all_labels, load=self.target_condiction)
+        create_testdataset(train, test, all_labels, trainlabels, testlabels, self.save_path, phase="test")
+        del train, test, _
+        self.add_snr = False
+        return trainlabels, testlabels
+
+
+    def build_dataset(self, df, all_labels, load):
+        filepath = "train.csv"
+        train_ratio = 0.7
+        train_data = []
+        train_label = []
+        test_data = []
+        test_label = []
+
+        for i in range(df.shape[0]):
+            file_info = extract_info_from_filename(df.loc[i]["label"])
+            if file_info["Type"] != "Normal":
+                if file_info['Sample Frequence'] == 12 and file_info['Drive End'] == "Drive_End":
+                    if file_info['Load'] == load:
+                        if validate_OR(file_info['Fault Info']):
+                            if file_info['Fault Info'].split('@')[1] == "3" or file_info['Fault Info'].split('@')[
+                                1] == "12":
+                                continue
+                        train_data.append(df.loc[i]["data"][:int(len(df.loc[i]["data"]) * train_ratio)])
+                        train_label.append(all_labels.index(file_info["Fault Info"]))
+                        test_data.append(df.loc[i]["data"][int(len(df.loc[i]["data"]) * train_ratio) + 1:])
+                        test_label.append(all_labels.index(file_info["Fault Info"]))
+            if file_info["Type"] == "Normal" and file_info["Load"] == load:
+                train_data.append(df.loc[i]["data"][:int(len(df.loc[i]["data"]) * train_ratio)])
+                train_label.append(9)
+                test_data.append(df.loc[i]["data"][int(len(df.loc[i]["data"]) * train_ratio) + 1:])
+                test_label.append(9)
+
+        # 在此处加入噪声
+        if self.add_snr:
+            snr_value = self.SNR  # 假设噪声比例为 20dB
+            train_data = [add_noise(np.array(data), snr_value) for data in train_data]
+            test_data = [add_noise(np.array(data), snr_value) for data in test_data]
+
+        train = pd.DataFrame({"data": train_data, "label": train_label})
+        train.to_csv(filepath)
+        test = pd.DataFrame({"data": test_data, "label": test_label})
+        test.to_csv("test.csv")
+
+        return train, test
+
+# import numpy as np
+
+def add_noise(data, snr):
+    # 将 SNR 转换为线性标度
+    snr_linear = 10 ** (snr / 10)
+    # 计算信号功率
+    signal_power = np.mean(data ** 2)
+    # 计算噪声功率
+    noise_power = signal_power / snr_linear
+    # 生成噪声
+    noise = np.sqrt(noise_power) * np.random.randn(*data.shape)
+    # 加入噪声
+    noisy_data = data + noise
+    return noisy_data
+
+
 def create_testdataset(train,test,all_labels,train_labels,test_labels,save_path,phase = "test"):
     #初始化中间变量
 
@@ -195,17 +328,40 @@ def save_SDOS_dataset(save_path,
 ):
     # 指定包含MAT文件的文件夹路径
     # folder_path = 'H:\project\data\cwru\CaseWesternReserveUniversityData'
-
+    openfault_subsets = []
+    USE_FIX_LABELS = True
     # 读取MAT文件并创建DataFrame
     print("data generating...")
     df = read_mat_files(folder_path)
 
     all_labels = ['B007', 'B014', 'B021', 'IR007', 'IR014', 'IR021', 'OR007@6', 'OR014@6', 'OR021@6']
     # 随机生成训练集和测试集lables，并打印区别
-    num_labels_to_select = random.randint(2, 3)
-    trainlabels = random.sample(all_labels, num_labels_to_select)
-    num_labels_to_select = random.randint(7, 9)
-    testlabels = random.sample(all_labels, num_labels_to_select)
+
+    trainlabel_index = [1, 4, 3, 5, 6]
+    testlabel_index = [1,4, 7, 3, 5,6]
+    openfaultsize = 1
+    if USE_FIX_LABELS:
+        trainlabels = []
+        testlabels = []
+
+        for index in trainlabel_index:
+            trainlabels.append(all_labels[index])
+        for index in testlabel_index:
+            testlabels.append(all_labels[index])
+
+        # trainlabels = ['IR014', 'IR007', 'B021', 'IR021','B007']
+        openfault = list(set(all_labels) - set(trainlabels))
+        if not openfault_subsets:  # 只在第一次调用时生成子集
+            openfault_subsets = list(combinations(openfault, openfaultsize))
+        # openfault_subsets = list(combinations(openfault, 18))
+        # testlabels = trainlabels + list(self.openfault_subsets[self.index % len(self.openfault_subsets)])
+        # sindex += 1
+
+    else:
+        num_labels_to_select = random.randint(3, 5)
+        trainlabels = random.sample(all_labels, num_labels_to_select)
+        num_labels_to_select = random.randint(5, 9)
+        testlabels = random.sample(all_labels, num_labels_to_select)
     trainlabels.append("normal")
     testlabels.append("normal")
     all_labels.append("normal")

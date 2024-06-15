@@ -16,7 +16,7 @@ import argparse
 from CNN_LSTM import CustomModel
 from src.utils.II_LOSS import ii_loss
 
-model_save_path = BASE_FILE_PATH+r"\src\train\CWRU"
+model_save_path = "H:\project\imbalanced_data\openset_FD\src\discussion\SNR"
 
 def train_base_model():
     print("training base model...")
@@ -32,7 +32,7 @@ def main():
     #载入模型
     model = load_model(dim)
     #训练模型
-    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_classes=dim,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,model_save_path='best_model.pth')
+    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_classes=dim,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR)
     return accuracy
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,
@@ -225,9 +225,9 @@ def load_data(phase="train"):
         valdataset = TensorDataset(X_val, y_val)
         # 创建一个 DataLoader
         batch_size = 64
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True)
-        valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True,drop_last=True)
+        testdataloader = DataLoader(testdataset, batch_size=batch_size, shuffle=True,drop_last=True)
+        valdataloader = DataLoader(valdataset, batch_size=batch_size, shuffle=True,drop_last=True)
 
         return dataloader,testdataloader,valdataloader,dim
     if phase=="test":

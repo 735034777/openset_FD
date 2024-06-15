@@ -3,29 +3,24 @@ import os,sys
 import pandas as pd
 from src.config import BASE_FILE_PATH
 sys.path.append('../../utils')
-from src.train.NPP_PCTRAN.utils.evt_fitting import calculate_openmax_accuracy,calculate_openness
-from src.train.NPP_PCTRAN.dataset_built import save_SDOS_dataset
-from src.train.NPP_PCTRAN.utils.train_base_model import train_base_model
+from src.evt_fitting import calculate_openmax_accuracy,calculate_openness
+from src.utils.SDOS_CWRU import save_SDOS_dataset
+from src.utils.train_base_model import train_base_model
 from src.utils.tools import delete_file
-from itertools import combinations
-from dataset_built import SDOSDatasetManager
 
 
 
 
-FOLDER_PATH = r'H:\project\imbalanced_data\openset_FD'
+FOLDER_PATH = r'H:\project\data\cwru\CaseWesternReserveUniversityData'
 SAVE_PATH = r"H:\project\imbalanced_data\openset_FD\data"
 
-def train_SDOS_PCTRAN(result_path):
+
+def train_SDOS_CWRU(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    manager = SDOSDatasetManager(folder_path=SAVE_PATH+r"\NPP\100", save_path=SAVE_PATH)
     for i in range(100):
-
-
-        # trainlabels,testlabels = save_SDOS_dataset(SAVE_PATH,FOLDER_PATH)
-        trainlabels,testlabels = manager.generate_datasets()
+        trainlabels,testlabels = save_SDOS_dataset(SAVE_PATH,FOLDER_PATH)
 
         openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
         accuracy = train_base_model()
@@ -35,13 +30,10 @@ def train_SDOS_PCTRAN(result_path):
                     config.HIGH_DIMENSION_OUTPUT = False
                 else:
                     config.HIGH_DIMENSION_OUTPUT = True
-                for i in range(0,1):
+                for i in range(0,10):
                     new_index = len(results)
                     # config.LMNN_LR = 5*10**(-1*j)
-                    try:
-                        testaccuracy,precision,recall,f1,youdens_index,soft_accuracy,soft_metrix = calculate_openmax_accuracy(metric_types,5+10*i)
-                    except:
-                        continue
+                    testaccuracy,precision,recall,f1,youdens_index,soft_accuracy,soft_metrix = calculate_openmax_accuracy(metric_types,5+10*i)
                     open_fault = set(testlabels)-set(trainlabels)
                     formatted_open_fault = ', '.join(map(str, open_fault))
                     if config.HIGH_DIMENSION_OUTPUT==True:
@@ -68,6 +60,6 @@ if __name__=="__main__":
     warnings.filterwarnings("ignore")
     result = "SDOS_RESULTS_DIFF_METRIC.csv"
     # config.HIGH_DIMENSION_OUTPUT = True
-    train_SDOS_PCTRAN(result)
+    train_SDOS_CWRU(result)
     # sys.exit()
 

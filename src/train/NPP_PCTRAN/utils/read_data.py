@@ -95,38 +95,10 @@ def get_data(filepath=SOURCE_FILE_PATH+r"\10.csv"
         temdata[label] = label_num_map[file]
         data = pd.concat([data, temdata[:-1]], axis=0)
 
-    # if IF_normalize:
-    #     scaler = MinMaxScaler()
-    #     data[columns_to_normalize] = pd.DataFrame(scaler.fit_transform(data[columns_to_normalize]),
-    #                                                  columns=columns_to_normalize)
-    # for sensor in data.columns:
-    #     data[sensor] = pd.to_numeric(data[sensor])
+
     data = data.loc[:, (data != data.iloc[0]).any()]  # 删除单一值列
     data = data.dropna(axis=1)
 
-    # graph,remain_sensors = get_graph()
-    # data = data[data["TIME"] < highest_time]
-    # sensors = data.columns.drop(["TIME", "label"])
-    # if IF_normalize:
-    #     # sensors = data.columns.drop(["TIME","label"])
-    #     data[sensors] = (data[sensors] - data[sensors].min()) / (
-    #                 data[sensors].max() - data[sensors].min())
-    # if IF_fft:
-    #     from scipy import fft
-    #     labels = data['label'].unique()
-    #     temdatablow400 = pd.DataFrame()
-    #     for l in labels:
-    #         data_fft_blow400 = pd.DataFrame()
-    #         for sensor in data.columns.drop(["label","TIME"]):
-    #             data_fft_blow400[sensor] = np.abs(fft.rfft(data[data["label"] == l][sensor].values))
-    #         data_fft_blow400["label"] = l
-    #         # data_fft_blow400["id"] = np.linspace(0,data_fft_blow400.shape[0],num=data_fft_blow400.shape[0],endpoint=False,dtype=np.int)
-    #         temdatablow400 = pd.concat([temdatablow400, data_fft_blow400], axis=0)
-    #     data = temdatablow400
-    # temdata = data.loc[:,remain_sensors+["label"]]
-    # # temdata["label"]=data["label"]
-    # # temdata.set_index("id")
-    # # temdata.to_csv("./data/data.csv")
     return data
 
 

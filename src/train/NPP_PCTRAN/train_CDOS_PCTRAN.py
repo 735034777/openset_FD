@@ -67,7 +67,8 @@ def train_CDOS_PCTRAN(result_path):
                         results.iloc[new_index] = new_row
                     if os.path.exists(BASE_FILE_PATH+"/src/data/CWRU_lmnn_model.pkl"):
                         os.remove(BASE_FILE_PATH+"/src/data/CWRU_lmnn_model.pkl")
-            # results.append(dict(zip(results.columns,new_row)),ignore_index=True)
+            # results.append(dict(zip(results.c369369
+            # olumns,new_row)),ignore_index=True)
             results.to_csv(result_path)
 
 if __name__=="__main__":

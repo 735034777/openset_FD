@@ -4,7 +4,7 @@ import pandas as pd
 from src.config import BASE_FILE_PATH
 sys.path.append('../../utils')
 from src.evt_fitting import calculate_openmax_accuracy,calculate_openness
-from src.utils.CDOS_CWRU import save_CDOS_dataset
+from src.utils.CDOS_CWRU import save_CDOS_dataset,CWRUData
 from src.utils.train_base_model import train_base_model
 from src.utils.tools import delete_file
 
@@ -18,9 +18,10 @@ def train_CDOS_CWRU(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    for i in range(100):
-        trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,FOLDER_PATH)
-
+    cerudata = CWRUData(SAVE_PATH)
+    for i in range(10):
+        # trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,FOLDER_PATH)
+        trainlabels,testlabels = cerudata.save_CDOS_dataset()
         openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
         accuracy = train_base_model()
         try:
@@ -31,7 +32,7 @@ def train_CDOS_CWRU(result_path):
                     config.HIGH_DIMENSION_OUTPUT = False
                 else:
                     config.HIGH_DIMENSION_OUTPUT = True
-                for i in range(0,10):
+                for i in range(0,1):
                     new_index = len(results)
                     # config.LMNN_LR = 5*10**(-1*j)
                     testaccuracy,precision,recall,f1,youdens_index,soft_accuracy,soft_metrix = calculate_openmax_accuracy(metric_types,5+10*i)

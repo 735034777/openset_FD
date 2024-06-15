@@ -13,6 +13,7 @@ from torchvision import transforms
 from sklearn.model_selection import train_test_split
 from src.utils.SDOS_CWRU import extract_info_from_filename,read_mat_files,validate_OR,build_dataset,segment_time_series
 from src.config import *
+from itertools import combinations
 
 
 
@@ -149,6 +150,58 @@ def create_testdataset(train,test,all_labels,train_labels,test_labels,save_path,
     if phase =="test":
         np.save(save_path+r"\test_test"+"_x.npy", np.array(testdata))
         np.save(save_path+r"\test_test"+"_y.npy", np.array(testlabels))
+
+class CWRUData:
+    def __init__(self,save_path,folder_path='H:\project\data\cwru\CaseWesternReserveUniversityData'):
+        self.index = 0
+        self.folder_path = folder_path
+        self.save_path = save_path
+        self.openfault_subsets = []
+        self.USE_FIX_LABELS=True
+
+    def save_CDOS_dataset(self):
+        # 读取MAT文件并创建DataFrame
+        print("data generating...")
+        df = read_mat_files(self.folder_path)
+
+        all_labels = ['B007', 'B014', 'B021', 'IR007', 'IR014', 'IR021', 'OR007@6', 'OR014@6', 'OR021@6']
+        # 随机生成训练集和测试集lables，并打印区别
+        trainlabel_index = [2,4,3,5,6]
+        testlabel_index = [4, 7, 6]
+        openfaultsize = 1
+        if self.USE_FIX_LABELS:
+            trainlabels = []
+            testlabels = []
+
+            for index in trainlabel_index:
+                trainlabels.append(all_labels[index])
+            for index in testlabel_index:
+                testlabels.append(all_labels[index])
+
+            # trainlabels = ['IR014', 'IR007', 'B021', 'IR021','B007']
+            openfault = list(set(all_labels) - set(trainlabels))
+            if not self.openfault_subsets:  # 只在第一次调用时生成子集
+                self.openfault_subsets = list(combinations(openfault, openfaultsize))
+            # openfault_subsets = list(combinations(openfault, 18))
+            # testlabels = trainlabels + list(self.openfault_subsets[self.index % len(self.openfault_subsets)])
+            self.index += 1
+
+        else:
+            num_labels_to_select = random.randint(3, 5)
+            trainlabels = random.sample(all_labels, num_labels_to_select)
+            num_labels_to_select = random.randint(5, 9)
+            testlabels = random.sample(all_labels, num_labels_to_select)
+        trainlabels.append("normal")
+        testlabels.append("normal")
+        all_labels.append("normal")
+        # print(list(set(trainlabels).symmetric_difference(set(testlabels))))  # 应该先求交后求差
+        train, test = build_dataset(df, all_labels, load=0)
+        create_testdataset(train, test, all_labels, trainlabels, testlabels, self.save_path, phase="train")
+        _, test = build_dataset(df, all_labels, load=0)
+        create_testdataset(train, test, all_labels, trainlabels, testlabels, self.save_path, phase="test")
+        del train, test, _
+        return trainlabels, testlabels
+
 
 def save_CDOS_dataset(save_path,
         folder_path = 'H:\project\data\cwru\CaseWesternReserveUniversityData'

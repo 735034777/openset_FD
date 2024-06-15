@@ -4,7 +4,7 @@ import pandas as pd
 from src.config import BASE_FILE_PATH
 sys.path.append('../../utils')
 from src.evt_fitting import calculate_openmax_accuracy,calculate_openness
-from src.utils.SDOS_CWRU import save_SDOS_dataset
+from src.utils.SDOS_CWRU import save_SDOS_dataset,SNR_CWRU_Data
 from src.utils.train_base_model import train_base_model
 from src.utils.tools import delete_file
 
@@ -19,8 +19,12 @@ def train_SDOS_CWRU(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    for i in range(100):
+    snr_data = SNR_CWRU_Data("H:\project\imbalanced_data\openset_FD\data",
+                                      "H:\project\imbalanced_data\openset_FD\data\cwru",SNR=10*0)
+    for i in range(1):
         trainlabels,testlabels = save_SDOS_dataset(SAVE_PATH,FOLDER_PATH)
+        # trainlabels,testlabels = snr_data.save_CDOS_dataset()
+
 
         openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
         accuracy = train_base_model()
