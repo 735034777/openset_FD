@@ -30,8 +30,8 @@ def train_SDOS_CWRU(result_path):
         accuracy = train_base_model()
         for metric_types in metric_types_list:
 
-            for i in range(0,200):
-                tailsize = i
+            for i in range(0,1):
+                tailsize = 5
                 new_index = len(results)
                 # config.LMNN_LR = 5*10**(-1*j)
                 testaccuracy,precision,recall,f1,youdens_index,soft_accuracy,soft_metrix = calculate_openmax_accuracy(metric_types,tailsize)

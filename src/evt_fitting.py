@@ -324,6 +324,11 @@ def calculate_openmax_accuracy(metric_type="cosine",tail_size = 5):
     results_compare = pd.DataFrame(dict(zip(["y_test","y_softmax","y_openmax"],[list(np.array(y_test)),y_softmax_predicted_values,y_predicted_values])))
     y_test = y_test.detach().numpy()
     y_test[y_test >= dim] = dim
+    np.save("y_predicted_values_"+metric_type,np.array(y_predicted_values))
+    np.save("y_softmax_predicted_values_"+metric_type,np.array(y_softmax_predicted_values))
+    np.save("y_test_"+metric_type,y_test)
+
+
     accuracy = np.mean(y_test == y_predicted_values)
     soft_accuracy = np.mean(y_test == y_softmax_predicted_values)
     soft_metrix = calculate_metrix(y_test,y_softmax_predicted_values)

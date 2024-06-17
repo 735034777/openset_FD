@@ -17,12 +17,9 @@ import math
 import random
 import numpy as np
 import torch
+RANDOMSEED = 42
 
 
-# 设置随机种子
-random.seed(42)
-np.random.seed(42)
-torch.manual_seed(42)
 
 
 
@@ -282,6 +279,10 @@ class SNR_CWRU_Data:
 # import numpy as np
 
 def add_noise(data, snr):
+    # 设置随机种子
+    random.seed(RANDOMSEED)
+    np.random.seed(RANDOMSEED)
+    torch.manual_seed(RANDOMSEED)
     # 将 SNR 转换为线性标度
     snr_linear = 10 ** (snr / 10)
     # 计算信号功率

@@ -16,7 +16,7 @@ import argparse
 from src.train.NPP_PCTRAN.utils.CNN_LSTM  import CustomModel
 from src.utils.II_LOSS import ii_loss
 
-model_save_path = BASE_FILE_PATH+r"\src\train\NPP_PCTRAN"
+model_save_path = r"H:\project\imbalanced_data\openset_FD\src\train\NPP_PCTRAN"
 
 def train_base_model():
     print("training base model...")
@@ -32,7 +32,7 @@ def main():
     #载入模型
     model = load_model(dim)
     #训练模型
-    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_classes=dim,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,model_save_path='best_model.pth')
+    accuracy = train_model(model,dataloader,testdataloader,valdataloader,num_classes=dim,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,model_save_path=model_save_path+ r"\best_model.pth")
     return accuracy
 
 def train_model(model, dataloader, testdataloader, valdataloader,num_epochs=BASE_MOEDL_EPOCH, lr=BASE_MODEL_LR,

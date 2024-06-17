@@ -6,6 +6,13 @@ sys.path.append(current_path)
 import torch
 import torch.nn as nn
 import src.config as config
+import random
+import numpy as np
+
+RANDOMSEED = 42
+random.seed(RANDOMSEED)
+np.random.seed(RANDOMSEED)
+torch.manual_seed(RANDOMSEED)
 
 class CustomModel(nn.Module):
     def __init__(self,dim):

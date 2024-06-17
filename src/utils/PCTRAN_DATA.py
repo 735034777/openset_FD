@@ -1,16 +1,12 @@
-import os
-import random
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from src.train.NPP_PCTRAN.utils.read_data import get_data
-# from src.config import *
-from src.config import *
-from itertools import combinations
-import yaml
+"""
+File: PCTRAN_DATA
+Author: admin
+Date Created: 2024/6/15
+Last Modified: 2024/6/15
 
-SOURCE_FILE_PATH =  BASE_FILE_PATH +"/data/NPP"
-
+Description:
+PCTRAN数据的读取存储和预处理
+"""
 
 class SDOSDatasetManager:
     def __init__(self, folder_path, save_path):
@@ -92,16 +88,13 @@ class SDOSDatasetManager:
         all_labels = list(range(num_class))
 
         if self.USE_FIX_LABELS:
-            # trainlabels = [9, 19,13,17,12,4,18,7,15,1,20,24]
-            trainlabels = [9, 19, 13, 17, 12, 4, 18, 7, 15, 1, 20, 24]
+            trainlabels = [8, 16, 19, 22]
             openfault = list(set(all_labels) - set(trainlabels))
             if not self.openfault_subsets:  # 只在第一次调用时生成子集
-                self.openfault_subsets = list(combinations(openfault, 1))
+                self.openfault_subsets = list(combinations(openfault, 18))
             # openfault_subsets = list(combinations(openfault, 18))
             testlabels = trainlabels + list(self.openfault_subsets[self.index % len(self.openfault_subsets)])
             self.index += 1
-            # testlabels = [21,9,13,12,14,24,15,4,1,7]
-            testlabels = [21, 9, 13, 12, 14, 24, 15, 4, 1, 7]
         else:
             num_labels_to_select = random.randint(3, 5)
             trainlabels = random.sample(all_labels, num_labels_to_select)
@@ -114,7 +107,7 @@ class SDOSDatasetManager:
         return trainlabels, testlabels
 
 def read_mat_files(filepath=SOURCE_FILE_PATH+r"\LOCAC50.csv"):
-    df = get_data(filepath )
+    df = get_data(filepath + r"\LOCAC50.csv")
     return df
 
 def save_SDOS_dataset(save_path,
@@ -197,8 +190,6 @@ def segment_time_series(time_series):
     return segments
 
 
-if __name__ =="__main__":
-    data = read_mat_files()
-    segments = segment_time_series(data)
-    trainlabels,testlabels = save_SDOS_dataset()
-    print()
+
+
+

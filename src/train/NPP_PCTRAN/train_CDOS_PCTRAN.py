@@ -1,6 +1,6 @@
-import src.config as config
 import os,sys
 import pandas as pd
+import src.config as config
 from src.config import BASE_FILE_PATH
 sys.path.append('../../utils')
 from src.train.NPP_PCTRAN.utils.evt_fitting import calculate_openmax_accuracy,calculate_openness
@@ -21,28 +21,25 @@ SAVE_PATH = r"H:\project\imbalanced_data\openset_FD\data"
 def train_CDOS_PCTRAN(result_path):
     results = pd.read_csv(result_path,index_col=0)
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
+    metric_types_list = ["cosine","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
     indexs = [["50", "70"], ["70", "100"], ["50", "100"]]
+    # indexs = [["100", "100"]]
     listlabelgen = LabelGenerator()
+    trainlabels, testlabels = generate_labels()
+    trainlabels, testlabels = listlabelgen.generate_labels()
+    trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,trainlabels,testlabels,indexs[0],folder_path=FOLDER_PATH)
+    openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
+    accuracy = train_base_model()
     for i in range(100):
-        trainlabels, testlabels = generate_labels()
-        trainlabels, testlabels = listlabelgen.generate_labels()
-
-
-
-
         for index in indexs:
-            trainlabels,testlabels = save_CDOS_dataset(SAVE_PATH,trainlabels,testlabels,index,FOLDER_PATH)
-
-            openness = calculate_openness(len(trainlabels), len(set(trainlabels+testlabels)))
-            accuracy = train_base_model()
             for metric_types in metric_types_list:
                 for j in range(1):
                     if j == 0:
                         config.HIGH_DIMENSION_OUTPUT = False
                     else:
                         config.HIGH_DIMENSION_OUTPUT = True
-                    for i in range(0,1):
+                    for k in range(0,1):
                         new_index = len(results)
                         # config.LMNN_LR = 5*10**(-1*j)
                         try:
@@ -74,7 +71,7 @@ def train_CDOS_PCTRAN(result_path):
 if __name__=="__main__":
     import warnings
     warnings.filterwarnings("ignore")
-    result = "CDOS_RESULTS_DIFF_METRIC.csv"
+    result = r"H:\project\imbalanced_data\openset_FD\src\train\NPP_PCTRAN\SDOS_DISSCUSSION_TAILSIZE.csv"
     # config.HIGH_DIMENSION_OUTPUT = True
     train_CDOS_PCTRAN(result)
     # sys.exit()
