@@ -283,8 +283,15 @@ def compute_softmax_probability(scores):
     return exp_scores / np.sum(exp_scores)
 
 def get_score_and_prob(x,dim):
-    model = load_model(dim,"test")
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # device = "cpu"
+    model = load_model(dim,"test").to(device)
+    x = x.to(device)
     predictive,activate_val,high_dim_vector = model(x)
+    if device == "cuda":
+        predictive, activate_val, high_dim_vector = predictive.to("cpu"),activate_val.to("cpu"),high_dim_vector.to("cpu")
+    del model
+    torch.cuda.empty_cache()
     return predictive.detach().numpy(),activate_val.detach().numpy(),high_dim_vector.detach().numpy()
 
 def recalibrate_score(score, highDV,weibull_model,dim,metric_type ="cosine", lmnn=None):

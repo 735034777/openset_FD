@@ -215,6 +215,7 @@ def load_data(phase="train"):
         # 转换 NumPy 数组为 PyTorch Tensor
         x = torch.tensor(X_train, dtype=torch.float32)
         y = torch.tensor(y_train, dtype=torch.long)
+        np.save("train_label.npy",np.array(y))
         X_test = torch.tensor(X_test, dtype=torch.float32)
         y_test = torch.tensor(y_test, dtype=torch.long)
         X_val = torch.tensor(X_val, dtype=torch.float32)
@@ -249,6 +250,7 @@ def load_data(phase="train"):
         y_test = torch.tensor(y_test, dtype=torch.long)
         X_train = torch.tensor(X_train, dtype=torch.float32)
         y_train = torch.tensor(y_train, dtype=torch.long)
+        np.save("train_label",y_train)
         # 创建一个 TensorDataset
         # dataset = TensorDataset(x, y)
         # testdataset = TensorDataset(X_test, y_test)
@@ -276,4 +278,5 @@ def load_config():
     return args
 
 if __name__ =="__main__":
-    main()
+    # main()
+    load_data("test")

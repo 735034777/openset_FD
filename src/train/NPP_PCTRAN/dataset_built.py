@@ -21,6 +21,7 @@ class SDOSDatasetManager:
         self.MAXTIMESTAMP = 1500
         self.index =0
         self.openfault_subsets = []
+        self.opensize=1
         print("SDOS Dataset Manager initialized.")
 
     def read_mat_files(self):
@@ -85,6 +86,12 @@ class SDOSDatasetManager:
         # 这里应该实现数据集的创建和保存逻辑
         pass
 
+    def set_opensize(self,opensize):
+        self.opensize = opensize
+
+    def set_index(self,index):
+        self.index = index
+
     def generate_datasets(self):
         print("Data generating...")
         df = self.read_mat_files()
@@ -93,15 +100,15 @@ class SDOSDatasetManager:
 
         if self.USE_FIX_LABELS:
             # trainlabels = [9, 19,13,17,12,4,18,7,15,1,20,24]
-            trainlabels = [9, 19, 13, 17, 12, 4, 18, 7, 15, 1, 20, 24]
+            trainlabels = [20, 22, 8, 9]
             openfault = list(set(all_labels) - set(trainlabels))
             if not self.openfault_subsets:  # 只在第一次调用时生成子集
-                self.openfault_subsets = list(combinations(openfault, 1))
+                self.openfault_subsets = list(combinations(openfault, self.opensize))
             # openfault_subsets = list(combinations(openfault, 18))
             testlabels = trainlabels + list(self.openfault_subsets[self.index % len(self.openfault_subsets)])
             self.index += 1
             # testlabels = [21,9,13,12,14,24,15,4,1,7]
-            testlabels = [21, 9, 13, 12, 14, 24, 15, 4, 1, 7]
+            # testlabels = [1, 3, 4, 7, 10, 0, 23, 24, 25, 8, 20, 14, 16]
         else:
             num_labels_to_select = random.randint(3, 5)
             trainlabels = random.sample(all_labels, num_labels_to_select)

@@ -79,9 +79,11 @@ def weibull_fit(metric_type="cosine",tail_size=5):
 
     # 如果不存在保存的模型文件，
     x, _,y, _, dim = load_data("test")
+    np.save("train_label.npy",y)
 
     # 调用 get_score_and_prob 函数获取数据的分数（score）和概率（prob），其中概率是通过模型预测得到的。
     prob, scores,highDV = get_score_and_prob(x,dim)
+    np.save("SNEtrain_score.npy",scores)
     # 通过 np.argmax(prob, axis=1) 得到每个样本的预测类别
     predicted_y = np.argmax(prob, axis=1)
     # 获取数据集中的唯一标签（labels）
@@ -297,6 +299,9 @@ def calculate_openmax_accuracy(metric_type="cosine",tail_size = 5):
     _,x_test,_, y_test ,dim= load_data(phase="test")
     # 获取激活分数： 调用 get_score_and_prob 函数获取测试数据的激活分数 scores
     _, scores,highDV = get_score_and_prob(x_test,dim)
+    softmax_scores = np.exp(scores) / np.sum(np.exp(scores), axis=1, keepdims=True)
+    np.save("activation_vectory_"+metric_type,scores)
+
     if metric_type == "lmnn":
         if config.HIGH_DIMENSION_OUTPUT==False:
             scores = lmnn.transform(scores)
@@ -325,7 +330,7 @@ def calculate_openmax_accuracy(metric_type="cosine",tail_size = 5):
     y_test = y_test.detach().numpy()
     y_test[y_test >= dim] = dim
     np.save("y_predicted_values_"+metric_type,np.array(y_predicted_values))
-    np.save("y_softmax_predicted_values_"+metric_type,np.array(y_softmax_predicted_values))
+    np.save("y_softmax_predicted_values_"+metric_type,np.argmax(softmax_scores,axis=1))
     np.save("y_test_"+metric_type,y_test)
 
 

@@ -21,7 +21,10 @@ def train_SDOS_CWRU(result_path):
     metric_types_list = ["cosine","lmnn","euclidean","manhattan"]
     metric_types_list = ["cosine","euclidean","manhattan"]
     # metric_types_list = ["lmnn"]
-    for i in range(1):
+    for i in range(200):
+        random.seed(i)
+        np.random.seed(i)
+        torch.manual_seed(i)
         snr_cwru_data = SNR_CWRU_Data("H:\project\imbalanced_data\openset_FD\data",
                                       "H:\project\data\cwru\CaseWesternReserveUniversityData",SNR=-10*(i+1))
         trainlabels,testlabels = snr_cwru_data.save_CDOS_dataset()
@@ -54,7 +57,7 @@ def train_SDOS_CWRU(result_path):
 if __name__=="__main__":
     import warnings
     warnings.filterwarnings("ignore")
-    result = "SDOS_RESULTS_tailsize.csv"
+    result = "SDOS_RESULTS_stable.csv"
     # config.HIGH_DIMENSION_OUTPUT = True
     train_SDOS_CWRU(result)
     # sys.exit()
